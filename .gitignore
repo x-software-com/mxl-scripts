@@ -1,0 +1,5 @@
+# Ignore backupfiles from merge conflicts.
+*.orig
+
+# Ignore vscode/vscodium settings.
+.vscode

@@ -1,0 +1,29 @@
+from_latest_tag = false
+ignore_merge_commits = true
+tag_prefix = "v"
+branch_whitelist = ["main"]
+pre_bump_hooks = [
+  "echo 'Cannot create a new version for mxl-scripts repository'",
+  "exit 1",
+]
+post_bump_hooks = []
+pre_package_bump_hooks = []
+post_package_bump_hooks = []
+
+[git_hooks.commit-msg]
+script = """#!/bin/sh
+set -e
+
+echo "[ typos ]"
+typos
+
+echo "[ typos $1 ]"
+typos $1
+
+echo "[ cog verify ]"
+cog verify --file $1
+"""
+
+[commit_types]
+
+[bump_profiles]
