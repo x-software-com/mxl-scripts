@@ -19,7 +19,7 @@ main() {
 	fi
 
 	cat ${LOG_FILE} \
-		| grep -v "^    Checking \|^   Compiling \|^  Downloaded \|^ Downloading \|^    Updating crates.io index\|^    Finished " \
+		| grep -v "^    Checking \|^   Compiling \|^  Downloaded \|^ Downloading \|^    Updating \|^    Finished " \
 		> ${CLEAN_LOG_FILE}
 
 	if [ "$(set -e; cat ${CLEAN_LOG_FILE} | wc -l)" != "0" ]; then
