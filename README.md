@@ -11,8 +11,7 @@ Please follow the [conventional commit](https://www.conventionalcommits.org/en/v
 To integrate the MXL-Scripts into a repository:
 
 ```sh
-$ git submodule add git@github.com:x-software-com/mxl-scripts.git scripts
-$ git submodule update --init
+$ git submodule add https://github.com/x-software-com/mxl-scripts.git scripts
 ```
 
 Create a `.build-env` file with the following content in the root directory of your repository and change the values according to your product:
