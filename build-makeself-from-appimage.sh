@@ -124,30 +124,29 @@ main() {
 	local REMOVE_DESKTOP_FILE_SCRIPT="\${BIN_DIR}/${REMOVE_DESKTOP_FILE_SCRIPT}"
 
 	check_command 'id'
-	if [ \$(id -u) -ne 0 ]; then
-		echo "Fatal: Administrative privileges required for execution (use su or sudo)"
-		exit 1
-	fi
-
-	if [ -f "\${REMOVE_DESKTOP_FILE_SCRIPT}" ]; then
-		"\${REMOVE_DESKTOP_FILE_SCRIPT}" 2>&1 > /dev/null
-		check_command 'rm'
-		rm -f "\${REMOVE_DESKTOP_FILE_SCRIPT}"
-	fi
-	if [ -f "\${DESKTOP_FILE_PATH}" ]; then
-		for XDG_PATH in \${XDG_PATHS} ; do
-			if [ -d \${XDG_PATH}/applications ]; then
-				XDG_DESKTOP_FILE_PATH=\${XDG_PATH}/applications
-				break
-			fi
-		done
-
-		modify_desktop_file "\${BIN_DIR}/${PACKAGE}" "\${APP_DIR}/share/icons/hicolor/scalable/apps/${APP_ID}.svg" "\${DESKTOP_FILE_PATH}"
-		if [ ! -z \${XDG_DESKTOP_FILE_PATH} ] && [ -d \${XDG_DESKTOP_FILE_PATH} ]; then
-			check_command 'cp'
-			cp "\${DESKTOP_FILE_PATH}" "\${XDG_DESKTOP_FILE_PATH}"
-			create_remove_desktop_file_script "\${XDG_DESKTOP_FILE_PATH}/\${DESKTOP_FILE}" "\${REMOVE_DESKTOP_FILE_SCRIPT}"
+	if [ \$(id -u) -eq 0 ]; then
+		if [ -f "\${REMOVE_DESKTOP_FILE_SCRIPT}" ]; then
+			"\${REMOVE_DESKTOP_FILE_SCRIPT}" 2>&1 > /dev/null
+			check_command 'rm'
+			rm -f "\${REMOVE_DESKTOP_FILE_SCRIPT}"
 		fi
+		if [ -f "\${DESKTOP_FILE_PATH}" ]; then
+			for XDG_PATH in \${XDG_PATHS} ; do
+				if [ -d \${XDG_PATH}/applications ]; then
+					XDG_DESKTOP_FILE_PATH=\${XDG_PATH}/applications
+					break
+				fi
+			done
+
+			modify_desktop_file "\${BIN_DIR}/${PACKAGE}" "\${APP_DIR}/share/icons/hicolor/scalable/apps/${APP_ID}.svg" "\${DESKTOP_FILE_PATH}"
+			if [ ! -z \${XDG_DESKTOP_FILE_PATH} ] && [ -d \${XDG_DESKTOP_FILE_PATH} ]; then
+				check_command 'cp'
+				cp "\${DESKTOP_FILE_PATH}" "\${XDG_DESKTOP_FILE_PATH}"
+				create_remove_desktop_file_script "\${XDG_DESKTOP_FILE_PATH}/\${DESKTOP_FILE}" "\${REMOVE_DESKTOP_FILE_SCRIPT}"
+			fi
+		fi
+	else
+		echo "Warning: Setup is not executed with administrative privileges, skipping desktop integration."
 	fi
 
 	echo "${PRODUCT_NAME} was successfully set up in '\${APP_DIR}'."
@@ -329,7 +328,7 @@ main() {
 	popd
 
 	mkdir -p "${RESULT_DIR}"
-	/opt/makeself/makeself.sh --threads 0 --notemp --needroot --nooverwrite --keep-umask "${DEST_DIR}" "${RESULT_DIR}/${APP_NAME}-${VERSION}-${SYSTEM}-${ARCH}.run" "${APP_NAME}" "./${STARTUP_SCRIPT}"
+	/opt/makeself/makeself.sh --threads 0 --notemp --nooverwrite --keep-umask "${DEST_DIR}" "${RESULT_DIR}/${APP_NAME}-${VERSION}-${SYSTEM}-${ARCH}.run" "${APP_NAME}" "./${STARTUP_SCRIPT}"
 
 	popd
 }
