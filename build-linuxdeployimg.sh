@@ -146,8 +146,8 @@ main() {
 		# set -o pipefail exits the script if a command piped with tee exits with an error
 		set -o pipefail
 		mithra create --package-name ${PACKAGE} --project-path ${SRC_DIR} --package-path ${PKG_DIR} \
-			--result-path ${LICENSES_DIR} --export-path ${LICENSES_DIR} \
-			--additional-third-party-licenses ${LICENSES_DIR}/${BINARY}_third_party_licenses.json ${ADDITIONAL_MITHRA_ARGS} 2>&1 | tee ${RESULT_DIR}/mithra.log
+			--result-path ${LICENSES_DIR} --additional-third-party-licenses ${LICENSES_DIR}/${BINARY}_third_party_licenses.json \
+			${ADDITIONAL_MITHRA_ARGS} 2>&1 | tee ${RESULT_DIR}/mithra.log
 	)
 
 	pushd ${PKG_DIR}
