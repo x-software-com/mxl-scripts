@@ -81,6 +81,14 @@ main() {
 		--executable ${PKG_DIR}/usr/bin/${BINARY} \
 		--desktop-file ${PKG_DIR}/usr/share/applications/${APP_ID}.desktop
 
+	# Remove some libraries/files manually...
+	# The linuxdeploy --exclude-library argument does not work for plugins like linuxdeploy-plugin-gtk.
+
+	# libGLESv2 is linked to libglapi.so which is already excluded by the official exclusion list.
+	# https://github.com/AppImageCommunity/pkg2appimage/blob/master/excludelist
+	echo "Remove libGLESv2 that should be provided by proprietary drivers"
+	rm -f ${PKG_DIR}/usr/lib/libGLESv2.so.2
+
 	pushd ${PKG_DIR}
 	local LIBPIXBUFLOADER="usr/lib/libpixbufloader-svg.so"
     if [ -f ${LIBPIXBUFLOADER} ]; then
