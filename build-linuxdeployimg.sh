@@ -78,6 +78,7 @@ main() {
 		--library ../vcpkg_installed/${TRIPLET}/lib/libharfbuzz.so.0 \
 		--library ../vcpkg_installed/${TRIPLET}/lib/librsvg-*.so \
 		${CENTOS7_LIBS} \
+		${ADDITIONAL_LINUXDEPLOY_ARGS} \
 		--executable ${PKG_DIR}/usr/bin/${BINARY} \
 		--desktop-file ${PKG_DIR}/usr/share/applications/${APP_ID}.desktop
 
