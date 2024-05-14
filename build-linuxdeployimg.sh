@@ -90,6 +90,12 @@ main() {
 	echo "Remove libGLESv2 that should be provided by proprietary drivers"
 	rm -f ${PKG_DIR}/usr/lib/libGLESv2.so.2
 
+	# libva* libraries should be used from the system
+	echo "Remove libva* libraries"
+	rm -f ${PKG_DIR}/usr/lib/libva.so.2
+	rm -f ${PKG_DIR}/usr/lib/libva-x11.so.2
+	rm -f ${PKG_DIR}/usr/lib/libva-wayland.so.2
+
 	pushd ${PKG_DIR}
 	local LIBPIXBUFLOADER="usr/lib/libpixbufloader-svg.so"
     if [ -f ${LIBPIXBUFLOADER} ]; then
