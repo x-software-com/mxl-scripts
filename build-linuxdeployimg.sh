@@ -95,6 +95,7 @@ main() {
 	rm -f ${PKG_DIR}/usr/lib/libva.so.2
 	rm -f ${PKG_DIR}/usr/lib/libva-x11.so.2
 	rm -f ${PKG_DIR}/usr/lib/libva-wayland.so.2
+	rm -f ${PKG_DIR}/usr/lib/libva-drm.so.2
 
 	pushd ${PKG_DIR}
 	local LIBPIXBUFLOADER="usr/lib/libpixbufloader-svg.so"
