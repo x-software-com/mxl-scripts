@@ -48,58 +48,59 @@ def get_mxl_env(options, prefix_path):
     triplet_ = triplet()
     vcpkg_install_path = f'{prefix_path}/vcpkg_installed/{triplet_}'
 
-    if options.vcpkg_debug:
-        vcpkg_install_lib_path = f'{vcpkg_install_path}/debug/lib'
-        vcpkg_install_plugins_path = f'{vcpkg_install_path}/debug/plugins'
-    else:
-        vcpkg_install_lib_path = f'{vcpkg_install_path}/lib'
-        vcpkg_install_plugins_path = f'{vcpkg_install_path}/plugins'
+    if os.path.isdir(vcpkg_install_path):
+        if options.vcpkg_debug:
+            vcpkg_install_lib_path = f'{vcpkg_install_path}/debug/lib'
+            vcpkg_install_plugins_path = f'{vcpkg_install_path}/debug/plugins'
+        else:
+            vcpkg_install_lib_path = f'{vcpkg_install_path}/lib'
+            vcpkg_install_plugins_path = f'{vcpkg_install_path}/plugins'
 
-    mxl_env_paths = {
-        'PKG_CONFIG_PATH': [f'{vcpkg_install_lib_path}/pkgconfig'],
-        lib_path_envvar: [vcpkg_install_lib_path],
-        'GST_PLUGIN_PATH': [f'{vcpkg_install_plugins_path}/gstreamer',
-                            f'{vcpkg_install_lib_path}/gstreamer-1.0'],
-        'GST_PRESET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/presets'],
-        'GST_ENCODING_TARGET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/encoding-profiles'],
-    }
+        mxl_env_paths = {
+            'PKG_CONFIG_PATH': [f'{vcpkg_install_lib_path}/pkgconfig'],
+            lib_path_envvar: [vcpkg_install_lib_path],
+            'GST_PLUGIN_PATH': [f'{vcpkg_install_plugins_path}/gstreamer',
+                                f'{vcpkg_install_lib_path}/gstreamer-1.0'],
+            'GST_PRESET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/presets'],
+            'GST_ENCODING_TARGET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/encoding-profiles'],
+        }
 
-    if platform.system() == 'Darwin':
-        env["RPATH"] = vcpkg_install_lib_path
+        if platform.system() == 'Darwin':
+            env["RPATH"] = vcpkg_install_lib_path
 
-    env["VCPKG_INSTALL_PATH"] = vcpkg_install_path
-    env["VCPKG_INSTALL_LIB_PATH"] = vcpkg_install_lib_path
-    env["VCPKG_INSTALL_PLUGINS_PATH"] = vcpkg_install_plugins_path
+        env["VCPKG_INSTALL_PATH"] = vcpkg_install_path
+        env["VCPKG_INSTALL_LIB_PATH"] = vcpkg_install_lib_path
+        env["VCPKG_INSTALL_PLUGINS_PATH"] = vcpkg_install_plugins_path
 
-    env["MXL_VCPKG_TRIPLET"] = triplet()
-    env["GSETTINGS_SCHEMA_DIR"] = os.path.normpath(f"{vcpkg_install_path}/share/glib-2.0/schemas")
-    env["GST_PLUGIN_SYSTEM_PATH"] = ""
-    env["GST_PLUGIN_SCANNER"] = os.path.normpath(f"{vcpkg_install_path}/tools/gstreamer/gst-plugin-scanner")
+        env["MXL_VCPKG_TRIPLET"] = triplet()
+        env["GSETTINGS_SCHEMA_DIR"] = os.path.normpath(f"{vcpkg_install_path}/share/glib-2.0/schemas")
+        env["GST_PLUGIN_SYSTEM_PATH"] = ""
+        env["GST_PLUGIN_SCANNER"] = os.path.normpath(f"{vcpkg_install_path}/tools/gstreamer/gst-plugin-scanner")
 
-    for name, values in mxl_env_paths.items():
-        for value in reversed(values):
-            if value:
-                prepend_env_var(env, name, value)
+        for name, values in mxl_env_paths.items():
+            for value in reversed(values):
+                if value:
+                    prepend_env_var(env, name, value)
 
-    with os.scandir(f'{prefix_path}/vcpkg_installed/{triplet_static()}/tools') as dir_it:
-        for entry in dir_it:
-            if entry.is_dir():
-                prepend_env_var(env, "PATH", entry.path)
-                entry_bin_dir = pathlib.Path(entry.path).joinpath('bin')
-                if entry_bin_dir.is_dir():
-                    prepend_env_var(env, "PATH", entry_bin_dir.as_posix())
-    with os.scandir(f'{vcpkg_install_path}/tools') as dir_it:
-        for entry in dir_it:
-            if entry.is_dir():
-                prepend_env_var(env, "PATH", entry.path)
-                entry_bin_dir = pathlib.Path(entry.path).joinpath('bin')
-                if entry_bin_dir.is_dir():
-                    prepend_env_var(env, "PATH", entry_bin_dir.as_posix())
+        with os.scandir(f'{prefix_path}/vcpkg_installed/{triplet_static()}/tools') as dir_it:
+            for entry in dir_it:
+                if entry.is_dir():
+                    prepend_env_var(env, "PATH", entry.path)
+                    entry_bin_dir = pathlib.Path(entry.path).joinpath('bin')
+                    if entry_bin_dir.is_dir():
+                        prepend_env_var(env, "PATH", entry_bin_dir.as_posix())
+        with os.scandir(f'{vcpkg_install_path}/tools') as dir_it:
+            for entry in dir_it:
+                if entry.is_dir():
+                    prepend_env_var(env, "PATH", entry.path)
+                    entry_bin_dir = pathlib.Path(entry.path).joinpath('bin')
+                    if entry_bin_dir.is_dir():
+                        prepend_env_var(env, "PATH", entry_bin_dir.as_posix())
 
-    res = subprocess.run('pkg-config gdk-pixbuf-2.0 --variable=gdk_pixbuf_binary_version', shell = True, text = True, capture_output = True, check = False, env = env)
-    if res.returncode == 0:
-        gdb_pixbuf_version = res.stdout.strip()
-        env['GDK_PIXBUF_MODULE_FILE'] = os.path.normpath(f'{vcpkg_install_path}/lib/gdk-pixbuf-2.0/{gdb_pixbuf_version}/loaders.cache')
+        res = subprocess.run('pkg-config gdk-pixbuf-2.0 --variable=gdk_pixbuf_binary_version', shell = True, text = True, capture_output = True, check = False, env = env)
+        if res.returncode == 0:
+            gdb_pixbuf_version = res.stdout.strip()
+            env['GDK_PIXBUF_MODULE_FILE'] = os.path.normpath(f'{vcpkg_install_path}/lib/gdk-pixbuf-2.0/{gdb_pixbuf_version}/loaders.cache')
 
     return env
 
