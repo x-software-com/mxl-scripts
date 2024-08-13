@@ -67,11 +67,15 @@ main() {
 	mkdir -p vcpkg_installed/${TRIPLET}/lib/gtk-4.0
 	pushd "${BUILD_DIR}"
 
-	# These libraries must be deployed manually for centos7 because of too old system library versions
-	local CENTOS7_LIBS="--library ../vcpkg_installed/${TRIPLET}/lib/libfribidi.so.0 \
-						--library ../vcpkg_installed/${TRIPLET}/lib/libz.so.1 \
-						--library ../vcpkg_installed/${TRIPLET}/lib/libfontconfig.so.1 \
-						--library ../vcpkg_installed/${TRIPLET}/lib/libfreetype.so.6"
+
+	local CENTOS7_LIBS=""
+	if [[ $(set -e;lsb_release -sir) == CentOS\ 7* ]]; then
+		# These libraries must be deployed manually for centos7 because of too old system library versions
+		CENTOS7_LIBS="--library ../vcpkg_installed/${TRIPLET}/lib/libfribidi.so.0 \
+					  --library ../vcpkg_installed/${TRIPLET}/lib/libz.so.1 \
+					  --library ../vcpkg_installed/${TRIPLET}/lib/libfontconfig.so.1 \
+					  --library ../vcpkg_installed/${TRIPLET}/lib/libfreetype.so.6"
+	fi
 
 	DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
 		--verbosity=0 --appdir ${PKG_DIR} --plugin gstreamer --plugin gtk \
