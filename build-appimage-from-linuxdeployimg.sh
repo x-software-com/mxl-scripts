@@ -7,10 +7,15 @@ set -x
 
 check_arguments() {
 	local APP_NAME="$1"
-	local RESULT_DIR="$2"
-	local USAGE="Usage: $0 <app-name> <result-directory>"
+	local BUILD_TYPE="$2"
+	local RESULT_DIR="$3"
+	local USAGE="Usage: $0 <app-name> <build-type> <result-directory>"
 
 	if [ -z ${RESULT_DIR} ]; then
+		printf "\n${USAGE}\n\n"
+		exit 1
+	fi
+	if [ -z ${BUILD_TYPE} ]; then
 		printf "\n${USAGE}\n\n"
 		exit 1
 	fi
@@ -51,19 +56,26 @@ find_and_extract_linuxdeployimg() {
 
 main() {
 	local PACKAGE="$1"
+	local BUILD_TYPE="$2"
 	local RESULT_DIR=""
-	RESULT_DIR="$(set -e;pwd)/$2"
+	RESULT_DIR="$(set -e;pwd)/$3"
 	local SCRIPT_DIR=""
 	SCRIPT_DIR="$(set -e;dirname $0)"
 	SCRIPT_DIR="$(set -e;realpath ${SCRIPT_DIR})"
 
-	check_arguments "${PACKAGE}" "${RESULT_DIR}"
+	check_arguments "${PACKAGE}" "${BUILD_TYPE}" "${RESULT_DIR}"
 
 	local BUILD_DIR="build/appimage"
 	local SRC_DIR=""
 	SRC_DIR="$(set -e;pwd)"
     local VERSION=""
 	VERSION="$(set -e;cargo version-util get-version)"
+
+	local PACKAGE_VERSION="${VERSION}"
+	if [ "${BUILD_TYPE}" != "release" ]; then
+		local NO_STRIP="1"
+		PACKAGE_VERSION="debug-${VERSION}"
+	fi
 
 	. ${SRC_DIR}/.build-env
 
@@ -85,14 +97,15 @@ main() {
 	local TOOLS_DIR="libexec"
 
 	rm -rf tmp
-	find_and_extract_linuxdeployimg "${RESULT_DIR}" "${PACKAGE}" "${VERSION}" "tmp"
+	find_and_extract_linuxdeployimg "${RESULT_DIR}" "${PACKAGE}" "${PACKAGE_VERSION}" "tmp"
 
 	rm -rf "${DEST_DIR}"
 	mv tmp "${DEST_DIR}"
 
 	mkdir -p "${RESULT_DIR}"
 
-	export VERSION="${VERSION}"
+	export VERSION
+	export NO_STRIP
 	linuxdeploy-plugin-appimage --appdir "${DEST_DIR}"
 	mv *.AppImage "${RESULT_DIR}"
 
