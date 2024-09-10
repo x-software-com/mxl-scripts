@@ -63,7 +63,6 @@ main() {
 
 	local VERSION_PREFIX=""
 	if [ "${BUILD_TYPE}" != "release" ]; then
-		export NO_STRIP="1"
 		VERSION_PREFIX="debug-"
 		sed -i 's#Name=\(.*\)#Name=\1 debug#' ${BUILD_DIR}/${PKG_DIR}/usr/share/applications/${APP_ID}.desktop
 	fi

@@ -73,7 +73,6 @@ main() {
 
 	local PACKAGE_VERSION="${VERSION}"
 	if [ "${BUILD_TYPE}" != "release" ]; then
-		local NO_STRIP="1"
 		PACKAGE_VERSION="debug-${VERSION}"
 	fi
 
@@ -105,7 +104,6 @@ main() {
 	mkdir -p "${RESULT_DIR}"
 
 	export VERSION
-	export NO_STRIP
 	linuxdeploy-plugin-appimage --appdir "${DEST_DIR}"
 	mv *.AppImage "${RESULT_DIR}"
 
