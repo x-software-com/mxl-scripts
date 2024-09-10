@@ -126,8 +126,8 @@ main() {
 		LINK_DIR="$(set -e;dirname ${LINK})"
 		local LINK_REL_PATH=""
 		LINK_REL_PATH="$(set -e;realpath --relative-to=${LINK_DIR} usr/lib)"
-		echo patchelf --force-rpath --set-rpath '$ORIGIN'/${LINK_REL_PATH} ${LINK}
-		patchelf --force-rpath --set-rpath '$ORIGIN'/${LINK_REL_PATH} ${LINK}
+		echo /opt/linuxdeploy/usr/bin/patchelf --force-rpath --set-rpath '$ORIGIN'/${LINK_REL_PATH} ${LINK}
+		/opt/linuxdeploy/usr/bin/patchelf --force-rpath --set-rpath '$ORIGIN'/${LINK_REL_PATH} ${LINK}
     fi
 
 	# Update the Gdk-Pixbuf loaders.cache
