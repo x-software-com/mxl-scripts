@@ -103,7 +103,7 @@ main() {
 
 	mkdir -p "${RESULT_DIR}"
 
-	export VERSION
+	export LINUXDEPLOY_OUTPUT_VERSION=${VERSION}
 	linuxdeploy-plugin-appimage --appdir "${DEST_DIR}"
 	mv *.AppImage "${RESULT_DIR}"
 
