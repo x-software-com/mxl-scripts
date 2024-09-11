@@ -40,6 +40,17 @@ check_arguments() {
 	fi
 }
 
+extract_debug_and_strip() {
+	local FILENAME="$1"
+	local DEBUG_FILENAME="$2"
+
+	echo "stripping ${FILENAME}, putting debug info into ${DEBUG_FILENAME}"
+	objcopy --only-keep-debug "${FILENAME}" "${DEBUG_FILENAME}"
+	strip --strip-debug --strip-unneeded "${FILENAME}"
+	objcopy --add-gnu-debuglink="${DEBUG_FILENAME}" "${FILENAME}"
+	chmod -x "${DEBUG_FILENAME}"
+}
+
 main() {
 	local PACKAGE="$1"
 	local BUILD_TYPE="$2"
@@ -70,7 +81,7 @@ main() {
 	local VERSION=""
 	VERSION="${VERSION_PREFIX}$(set -e;cargo version-util get-version)"
 
-	local TAR_PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch).tar.xz"
+	local PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch)"
 
 	cargo install --git https://github.com/x-software-com/mithra.git
 
@@ -89,7 +100,7 @@ main() {
 					  --library ../vcpkg_installed/${TRIPLET}/lib/libfreetype.so.6"
 	fi
 
-	DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
+	NO_STRIP=1 DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
 		--verbosity=0 --appdir ${PKG_DIR} --plugin gstreamer --plugin gtk \
 		--library ../vcpkg_installed/${TRIPLET}/lib/libharfbuzz.so.0 \
 		--library ../vcpkg_installed/${TRIPLET}/lib/librsvg-*.so \
@@ -174,6 +185,21 @@ main() {
 
 	mkdir -p "${RESULT_DIR}"
 
+	# Extract debug information and stripping libraries and binary files:
+	# Note: do not strip gstreamer binaries like gst-inspect - they will be corrupted and crash (mime-type: application/x-executable)
+	local BUILD_DIR_ABS=${PWD}
+	pushd ${PKG_DIR}
+	find . -type f -exec file --mime-type "{}" \; > "${BUILD_DIR_ABS}/pkg_file_list.txt"
+	local DEBUG_FILENAMES=""
+	for FILE_NAME in $(cat "${BUILD_DIR_ABS}/pkg_file_list.txt" | grep ": application/x-sharedlib" | awk -F': application/x-sharedlib' '{print $1}'); do
+		local DEBUG_FILENAME="${FILE_NAME}.debug"
+		extract_debug_and_strip "${FILE_NAME}" "${DEBUG_FILENAME}"
+		DEBUG_FILENAMES="${DEBUG_FILENAMES} ${DEBUG_FILENAME}"
+	done
+	tar -cJf "${RESULT_DIR}/${PACKAGE_NAME}.debuginfo.tar.xz" ${DEBUG_FILENAMES}
+	rm ${DEBUG_FILENAMES}
+	popd
+
 	(
 		# set -o pipefail exits the script if a command piped with tee exits with an error
 		set -o pipefail
@@ -183,7 +209,7 @@ main() {
 	)
 
 	pushd ${PKG_DIR}
-	tar -cJf ${RESULT_DIR}/${TAR_PACKAGE_NAME} *
+	tar -cJf "${RESULT_DIR}/${PACKAGE_NAME}.tar.xz" *
 	popd
 
 	popd
