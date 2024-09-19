@@ -59,9 +59,6 @@ def get_mxl_env(options, prefix_path):
             'GST_ENCODING_TARGET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/encoding-profiles'],
         }
 
-        if platform.system() == 'Darwin':
-            env["RPATH"] = vcpkg_install_lib_path
-
         env["VCPKG_INSTALL_PATH"] = vcpkg_install_path
         env["VCPKG_INSTALL_LIB_PATH"] = vcpkg_install_lib_path
         env["VCPKG_INSTALL_PLUGINS_PATH"] = vcpkg_install_plugins_path
