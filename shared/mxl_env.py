@@ -40,11 +40,6 @@ def get_mxl_env(options, prefix_path):
     """Create a copy of the environment and set up all MXL specific values"""
     env = os.environ.copy()
 
-    if platform.system() == 'Darwin':
-        lib_path_envvar = 'DYLD_LIBRARY_PATH'
-    else:
-        lib_path_envvar = 'LD_LIBRARY_PATH'
-
     triplet_ = triplet()
     vcpkg_install_path = f'{prefix_path}/vcpkg_installed/{triplet_}'
 
@@ -58,7 +53,6 @@ def get_mxl_env(options, prefix_path):
 
         mxl_env_paths = {
             'PKG_CONFIG_PATH': [f'{vcpkg_install_lib_path}/pkgconfig'],
-            lib_path_envvar: [vcpkg_install_lib_path],
             'GST_PLUGIN_PATH': [f'{vcpkg_install_plugins_path}/gstreamer',
                                 f'{vcpkg_install_lib_path}/gstreamer-1.0'],
             'GST_PRESET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/presets'],
