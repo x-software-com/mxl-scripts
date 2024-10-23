@@ -16,11 +16,11 @@ fix_gdk_pixbuf() {
     case "${TYPE}" in
     debug)
         LIB_PATH="debug/lib"
-        eval "$(./mxl-env.py --print-env --vcpkg-debug)"
+        eval "$(./scripts/mxl-env.py --print-env --vcpkg-debug)"
         ;;
     release)
         LIB_PATH="lib"
-        eval "$(./mxl-env.py --print-env)"
+        eval "$(./scripts/mxl-env.py --print-env)"
         ;;
     *)
         echo ""
