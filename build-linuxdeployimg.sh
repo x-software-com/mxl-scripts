@@ -100,7 +100,7 @@ main() {
 					  --library ../vcpkg_installed/${TRIPLET}/lib/libfreetype.so.6"
 	fi
 
-	LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}:${LD_LIBRARY_PATH}" NO_STRIP=1 DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
+	LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" NO_STRIP=1 DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
 		--verbosity=0 --appdir ${PKG_DIR} --plugin gstreamer --plugin gtk \
 		--library ../vcpkg_installed/${TRIPLET}/lib/libharfbuzz.so.0 \
 		--library ../vcpkg_installed/${TRIPLET}/lib/librsvg-*.so \
@@ -125,6 +125,7 @@ main() {
 	rm -f ${PKG_DIR}/usr/lib/libva-drm.so.2
 
 	pushd ${PKG_DIR}
+	echo "Fix Gdk-Pixbuf plugin libpixbufloader-svg.so"
 	local LIBPIXBUFLOADER="usr/lib/libpixbufloader-svg.so"
     if [ -f ${LIBPIXBUFLOADER} ]; then
         local LINK=""
@@ -140,7 +141,7 @@ main() {
 		/opt/linuxdeploy/usr/bin/patchelf --force-rpath --set-rpath '$ORIGIN'/${LINK_REL_PATH} ${LINK}
     fi
 
-	# Update the Gdk-Pixbuf loaders.cache
+	echo "Update the Gdk-Pixbuf loaders.cache"
 	local GDK_PIXBUF_BINARY_VERSION=""
 	GDK_PIXBUF_BINARY_VERSION="$(pkg-config gdk-pixbuf-2.0 --variable=gdk_pixbuf_binary_version)"
 	if [ "${GDK_PIXBUF_BINARY_VERSION}" != "" ]; then
@@ -155,10 +156,17 @@ main() {
 		# Set LD_LIBRARY_PATH to find all dependencies of the GdkPixbuf plugins:
 		LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" ${GDK_PIXBUF_QUERY_LOADERS} --update-cache
 
+		# Check that the loaders.cache contains at least one plugin
+		if [ "$(set -e;cat ${GDK_PIXBUF_MODULE_FILE} | grep -v "^#" | wc -l)" == "0" ]; then
+			echo "ERROR: file ${GDK_PIXBUF_MODULE_FILE} contains no plugin"
+			exit 1
+		fi
+
 		# Make gdk-pixbuf directory relative in loaders.cache
 		sed -i "s|${PKG_DIR_FULL}/usr/||g" ${GDK_PIXBUF_MODULE_FILE}
 	fi
 
+	echo "Fix apprun-hooks"
 	for HOOK in $(ls apprun-hooks/*); do
 		sed -i 's#pkgconfig/..##g' ${HOOK}
 		sed -i "s#${SRC_DIR}/vcpkg_installed/$(set -e;${SCRIPT_DIR}/get-vcpkg-triplet.py)/##g" ${HOOK}
