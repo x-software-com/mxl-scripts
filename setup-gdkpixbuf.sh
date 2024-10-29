@@ -12,15 +12,17 @@ set -e
 fix_gdk_pixbuf() {
     local SRC_DIR="$1"
     local TYPE="$2"
+    local MXL_ENV_SCRIPT="./scripts/mxl-env.py"
 
+    test -x ${MXL_ENV_SCRIPT}
     case "${TYPE}" in
     debug)
         LIB_PATH="debug/lib"
-        eval "$(./scripts/mxl-env.py --print-env --vcpkg-debug)"
+        eval "$(set -e;${MXL_ENV_SCRIPT}ls --print-env --vcpkg-debug)"
         ;;
     release)
         LIB_PATH="lib"
-        eval "$(./scripts/mxl-env.py --print-env)"
+        eval "$(set -e;${MXL_ENV_SCRIPT} --print-env)"
         ;;
     *)
         echo ""
@@ -49,8 +51,8 @@ main() {
     SRC_DIR="$(set -e;pwd)"
 
     # Use subshells to prevent environment poisoning:
-    (fix_gdk_pixbuf "${SRC_DIR}" "release")
-    (fix_gdk_pixbuf "${SRC_DIR}" "debug")
+    (set -e;fix_gdk_pixbuf "${SRC_DIR}" "release")
+    (set -e;fix_gdk_pixbuf "${SRC_DIR}" "debug")
 }
 
 main $@
