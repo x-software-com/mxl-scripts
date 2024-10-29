@@ -39,7 +39,8 @@ fix_gdk_pixbuf() {
 
         export GDK_PIXBUF_MODULEDIR="${GDK_PIXBUF_LOADER_DIR}/loaders"
         export GDK_PIXBUF_MODULE_FILE="${GDK_PIXBUF_LOADER_DIR}/loaders.cache"
-        ./vcpkg_installed/${MXL_VCPKG_TRIPLET}/tools/gdk-pixbuf/gdk-pixbuf-query-loaders --update-cache
+        # Set LD_LIBRARY_PATH to find all dependencies of the GdkPixbuf plugins:
+        LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" ./vcpkg_installed/${MXL_VCPKG_TRIPLET}/tools/gdk-pixbuf/gdk-pixbuf-query-loaders --update-cache
     fi
 }
 

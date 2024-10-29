@@ -152,7 +152,8 @@ main() {
 
 		export GDK_PIXBUF_MODULEDIR="${GDK_PIXBUF_LOADER_DIR}/loaders"
 		export GDK_PIXBUF_MODULE_FILE="${GDK_PIXBUF_LOADER_DIR}/loaders.cache"
-		${GDK_PIXBUF_QUERY_LOADERS} --update-cache
+		# Set LD_LIBRARY_PATH to find all dependencies of the GdkPixbuf plugins:
+		LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" ${GDK_PIXBUF_QUERY_LOADERS} --update-cache
 
 		# Make gdk-pixbuf directory relative in loaders.cache
 		sed -i "s|${PKG_DIR_FULL}/usr/||g" ${GDK_PIXBUF_MODULE_FILE}
