@@ -18,7 +18,7 @@ fix_gdk_pixbuf() {
     case "${TYPE}" in
     debug)
         LIB_PATH="debug/lib"
-        eval "$(set -e;${MXL_ENV_SCRIPT}ls --print-env --vcpkg-debug)"
+        eval "$(set -e;${MXL_ENV_SCRIPT} --print-env --vcpkg-debug)"
         ;;
     release)
         LIB_PATH="lib"
