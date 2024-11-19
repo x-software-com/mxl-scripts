@@ -83,7 +83,7 @@ main() {
 
 	local PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch)"
 
-	cargo install --git https://github.com/x-software-com/mithra.git
+	cargo install --git https://github.com/x-software-com/mithra.git --tag "v0.1.0"
 
 	local TRIPLET="$(set -e;${SCRIPT_DIR}/get-vcpkg-triplet.py)"
 
