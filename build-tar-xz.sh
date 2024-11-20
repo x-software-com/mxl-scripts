@@ -49,14 +49,14 @@ main() {
 
 	${SCRIPT_DIR}/check-build-env.sh
 
-	cargo install --git https://github.com/x-software-com/mithra.git --tag "v0.1.0"
+	cargo install --version 0.1.0 sancus
 
 	local VERSION="$(set -e;cargo version-util get-version)"
 	local TAR_PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;${SCRIPT_DIR}/get-vcpkg-triplet.py).tar.xz"
 
 	pushd ${BUILD_DIR}
 
-	mithra export ${LICENSES_DIR} ${LICENSES_DIR}/com.x-software.mxl.gstmxlcompositor_third_party_licenses.json
+	sancus export ${LICENSES_DIR} ${LICENSES_DIR}/com.x-software.mxl.gstmxlcompositor_third_party_licenses.json
 
 	pushd ${PKG_DIR}
 

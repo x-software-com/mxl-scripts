@@ -23,7 +23,7 @@ export PACKAGE="mxl_product"
 export APP_NAME="MXL_Product"
 export PRODUCT_PRETTY_NAME="MXL Product"
 export APP_ID="${APP_ID_BASE}.product"
-export ADDITIONAL_MITHRA_ARGS="--additional-third-party-licenses ${LICENSES_DIR}/${APP_ID_BASE}.product_tool_third_party_licenses.json"
+export ADDITIONAL_SANCUS_ARGS="--additional-third-party-licenses ${LICENSES_DIR}/${APP_ID_BASE}.product_tool_third_party_licenses.json"
 export ADDITIONAL_LINUXDEPLOY_ARGS=""
 ```
 
