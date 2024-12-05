@@ -5,6 +5,7 @@ import os
 import subprocess
 import pathlib
 from sys import platform as sys_platform
+import platform
 
 from .triplet import triplet
 
@@ -30,6 +31,11 @@ def bootstrap(release):
 
 def setup_vcpkg(package, release):
     """Setup VCPKG according to the vcpkg-configuration.json for MXL"""
+
+    # Enable VCPKG_FORCE_SYSTEM_BINARIES for Linux AArch64 builds
+    if sys_platform.startswith('linux') and platform.machine().startswith('aarch64'):
+        os.environ["VCPKG_FORCE_SYSTEM_BINARIES"] = "true"
+
     bootstrap(release)
 
     # Workaround for vcpkg release 2023.07.21, a package that is built as the first one
@@ -48,4 +54,4 @@ def setup_vcpkg(package, release):
         if sys_platform.startswith('darwin'):
             print("Execute 'brew install nasm bison autoconf automake yasm pkg-config meson cmake' as ci-user")
         raise res.stderr
-    subprocess.run([f'{SCRIPTDIR}/setup-gdkpixbuf.sh', 'target/lib'], check = True)
+    subprocess.run([f'{SCRIPTDIR}/setup-gdkpixbuf.sh'], check = True)

@@ -13,7 +13,10 @@ def triplet():
     # elif sys_platform.startswith('win32'):
     #     return '...-dynamic'
     else:
-        return 'x64-linux-dynamic'
+        if platform.machine().startswith('aarch64'):
+            return 'arm64-linux-dynamic'
+        else:
+            return 'x64-linux-dynamic'
 
 def triplet_static():
     """"Get triplet for static VCPKG artifacts"""
@@ -25,4 +28,7 @@ def triplet_static():
     # elif sys_platform.startswith('win32'):
     #     return '...-dynamic'
     else:
-        return 'x64-linux'
+        if platform.machine().startswith('aarch64'):
+            return 'arm64-linux'
+        else:
+            return 'x64-linux'
