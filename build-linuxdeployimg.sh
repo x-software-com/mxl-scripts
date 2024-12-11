@@ -98,6 +98,9 @@ main() {
 					  --library ../vcpkg_installed/${TRIPLET}/lib/libz.so.1 \
 					  --library ../vcpkg_installed/${TRIPLET}/lib/libfontconfig.so.1 \
 					  --library ../vcpkg_installed/${TRIPLET}/lib/libfreetype.so.6"
+
+		# On Ubuntu 16.04.2 LTS libwayland-client.so.0 is too old for the version required by GTK 4.16
+		CENTOS7_LIBS="${CENTOS7_LIBS} --library /usr/local/lib64/libwayland-client.so.0"
 	fi
 
 	LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" NO_STRIP=1 DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
@@ -209,9 +212,9 @@ main() {
 	rm ${DEBUG_FILENAMES}
 	popd
 
-		sancus create --package-name ${PACKAGE} --project-path ${SRC_DIR} --package-path ${PKG_DIR} \
-			--result-path ${LICENSES_DIR} --additional-third-party-licenses ${LICENSES_DIR}/${BINARY}_third_party_licenses.json \
-			${ADDITIONAL_SANCUS_ARGS} 2>&1 | tee ${RESULT_DIR}/sancus.log
+	sancus create --package-name ${PACKAGE} --project-path ${SRC_DIR} --package-path ${PKG_DIR} \
+		--result-path ${LICENSES_DIR} --additional-third-party-licenses ${LICENSES_DIR}/${BINARY}_third_party_licenses.json \
+		${ADDITIONAL_SANCUS_ARGS} 2>&1 | tee ${RESULT_DIR}/sancus.log
 
 	pushd ${PKG_DIR}
 	tar -cJf "${RESULT_DIR}/${PACKAGE_NAME}.tar.xz" *
