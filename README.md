@@ -2,6 +2,14 @@
 
 MXL-Scripts is an open source collection of scripts to test and build MXL Products.
 
+# Setup
+
+[Install just](https://just.systems/man/en/packages.html)
+
+```sh
+just setup
+```
+
 # Usage
 
 Please follow the [conventional commit](https://www.conventionalcommits.org/en/v1.0.0/#summary) specification when merging from the MXL-Scripts repository or committing to it.
