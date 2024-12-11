@@ -9,7 +9,7 @@ check_env_value() {
     local VARIABLE="$1"
 
     if [ "${!VARIABLE}" = "" ]; then
-        printf "\nVaribale ${VARIABLE} not set in build-env\n\n"
+        printf "\nVariable ${VARIABLE} not set in build-env\n\n"
         exit 1
     fi
 }
