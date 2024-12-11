@@ -2,7 +2,7 @@
 #
 # Check if the required environment variables are set
 #
-set -e
+set -eo pipefail
 set -x
 
 check_env_value() {

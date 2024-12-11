@@ -12,7 +12,7 @@ post_package_bump_hooks = []
 
 [git_hooks.commit-msg]
 script = """#!/bin/sh
-set -e
+set -eo pipefail
 
 echo "[ typos ]"
 typos

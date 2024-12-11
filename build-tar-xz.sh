@@ -2,7 +2,7 @@
 #
 # Generate a .tar.xz file of the given package
 #
-set -e
+set -eo pipefail
 set -x
 
 check_arguments() {

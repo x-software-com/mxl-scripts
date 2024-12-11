@@ -1,6 +1,6 @@
 #!/bin/bash
 # set -x
-set -e
+set -eo pipefail
 
 # To enable SVG images in GTK, GDK-Pixbuf has to find the correct gdkpixbuf-loader for SVG provided by librsvg.
 # GDK-Pixbuf in the relocatable mode reads the link provided by '/proc/self/exe' (which resolves to '$MXL_GIT_DIR/target/$BUILD_MODE/$BINARY').

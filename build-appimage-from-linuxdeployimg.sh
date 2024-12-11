@@ -2,7 +2,7 @@
 #
 # Generate an AppImage from a linuxdeployimg
 #
-set -e
+set -eo pipefail
 set -x
 
 check_arguments() {

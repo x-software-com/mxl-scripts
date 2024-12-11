@@ -3,7 +3,7 @@
 # Generate a makeself self-extracting archive from an AppImage matching
 # the application name and the version.
 #
-set -e
+set -eo pipefail
 set -x
 
 check_arguments() {
@@ -64,7 +64,7 @@ create_setup_script() {
 
 	cat << EOFF > "${FILENAME}"
 #!/bin/sh
-set -e
+set -eo pipefail
 
 check_command() {
 	local TOOL="\$1"
@@ -81,7 +81,7 @@ create_remove_desktop_file_script() {
 
 	cat << EOF > "\${FILENAME}"
 #!/bin/sh
-set -e
+set -eo pipefail
 
 main() {
 	if [ -f "\${XDG_DESKTOP_FILE_PATH}" ]; then
@@ -166,7 +166,7 @@ create_uninstall_script() {
 
 	cat << EOFF > "${FILENAME}"
 #!/bin/sh
-set -e
+set -eo pipefail
 
 check_command() {
 	local TOOL="\$1"
@@ -238,7 +238,7 @@ create_wrapper_script() {
 
 	cat << EOFF > "${FILENAME}"
 #! /usr/bin/env bash
-set -e
+set -eo pipefail
 
 bin_dir="\$(readlink -f "\$(dirname "\$0")")"
 root_dir="\$(dirname "\$bin_dir")"
