@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "Continue.continue",
+    "DavidAnson.vscode-markdownlint",
+    "esbenp.prettier-vscode",
+    "MS-vsliveshare.vsliveshare",
+    "nefrob.vscode-just-syntax",
+    "streetsidesoftware.code-spell-checker",
+    "streetsidesoftware.code-spell-checker-german",
+    "tamasfe.even-better-toml",
+    "usernamehw.errorlens",
+  ],
+  "unwantedRecommendations": [
+    "skellock.just",
+    "kokakiwi.vscode-just"
+  ]
+}
