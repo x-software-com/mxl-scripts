@@ -102,7 +102,6 @@ modify_desktop_file() {
 	local ICON="\$2"
 	local FILENAME="\$3"
 
-	check_command 'sed'
 	sed -i -re "s|Exec=${PACKAGE}|Exec=\${BINARY}|" "\${FILENAME}"
 	sed -i -re "s|TryExec=${PACKAGE}|TryExec=\${BINARY}|" "\${FILENAME}"
 	sed -i -re "s|Icon=.*|Icon=\${ICON}|" "\${FILENAME}"
@@ -111,6 +110,11 @@ modify_desktop_file() {
 main() {
 	check_command 'dirname'
 	check_command 'realpath'
+	check_command 'id'
+	check_command 'rm'
+	check_command 'cp'
+	check_command 'sed'
+
 	local SCRIPT_PATH
 	local APP_DIR
 	SCRIPT_PATH=\$(set -e;realpath "\$0")
@@ -123,11 +127,9 @@ main() {
 	local DESKTOP_FILE_PATH="\${APP_DIR}/share/applications/\${DESKTOP_FILE}"
 	local REMOVE_DESKTOP_FILE_SCRIPT="\${BIN_DIR}/${REMOVE_DESKTOP_FILE_SCRIPT}"
 
-	check_command 'id'
 	if [ \$(id -u) -eq 0 ]; then
 		if [ -f "\${REMOVE_DESKTOP_FILE_SCRIPT}" ]; then
 			"\${REMOVE_DESKTOP_FILE_SCRIPT}" 2>&1 > /dev/null
-			check_command 'rm'
 			rm -f "\${REMOVE_DESKTOP_FILE_SCRIPT}"
 		fi
 		if [ -f "\${DESKTOP_FILE_PATH}" ]; then
@@ -140,7 +142,6 @@ main() {
 
 			modify_desktop_file "\${BIN_DIR}/${PACKAGE}" "\${APP_DIR}/share/icons/hicolor/scalable/apps/${APP_ID}.svg" "\${DESKTOP_FILE_PATH}"
 			if [ ! -z \${XDG_DESKTOP_FILE_PATH} ] && [ -d \${XDG_DESKTOP_FILE_PATH} ]; then
-				check_command 'cp'
 				cp "\${DESKTOP_FILE_PATH}" "\${XDG_DESKTOP_FILE_PATH}"
 				create_remove_desktop_file_script "\${XDG_DESKTOP_FILE_PATH}/\${DESKTOP_FILE}" "\${REMOVE_DESKTOP_FILE_SCRIPT}"
 			fi
@@ -191,6 +192,10 @@ remove_dir() {
 main() {
 	check_command 'dirname'
 	check_command 'realpath'
+	check_command 'id'
+	check_command 'rm'
+	check_command 'rmdir'
+
 	local SCRIPT_PATH
 	local APP_DIR
 	SCRIPT_PATH=\$(set -e;realpath "\$0")
@@ -201,7 +206,6 @@ main() {
 	local INSTALL_DIR_LIST="$(set -e;find . -mindepth 1 -type d | tac | sed 's#\./##g')
 "
 
-	check_command 'id'
 	if [ \$(id -u) -ne 0 ]; then
 		echo "Fatal: Administrative privileges required for execution (use su or sudo)"
 		exit 1
@@ -212,12 +216,10 @@ main() {
 		rm "\${BIN_DIR}/${REMOVE_DESKTOP_FILE_SCRIPT}"
 	fi
 	cd "\${APP_DIR}"
-	check_command 'rm'
 	for FILE in \${INSTALL_FILE_LIST}; do
 		remove_file "\${APP_DIR}/\${FILE}"
 	done
 	remove_file "\${SCRIPT_PATH}"
-	check_command 'rmdir'
 	for DIR in \${INSTALL_DIR_LIST}; do
 		remove_dir "\${APP_DIR}/\${DIR}"
 	done
