@@ -53,10 +53,14 @@ def get_mxl_env(options, prefix_path):
 
         mxl_env_paths = {
             'PKG_CONFIG_PATH': [f'{vcpkg_install_lib_path}/pkgconfig'],
-            'GST_PLUGIN_PATH': [f'{vcpkg_install_plugins_path}/gstreamer',
+            'GST_PLUGIN_PATH_1_0': [f'{vcpkg_install_plugins_path}/gstreamer',
                                 f'{vcpkg_install_lib_path}/gstreamer-1.0'],
             'GST_PRESET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/presets'],
             'GST_ENCODING_TARGET_PATH': [f'{vcpkg_install_path}/share/gstreamer-1.0/encoding-profiles'],
+            'GST_PLUGIN_SYSTEM_PATH_1_0': ['/usr/lib/gstreamer-1.0',
+                                        '/usr/lib64/gstreamer-1.0',
+                                        '/usr/local/lib/gstreamer-1.0',
+                                        '/usr/local/lib64/gstreamer-1.0'],
         }
 
         # Backup PATH for possible later restoration to system defaults
@@ -68,7 +72,6 @@ def get_mxl_env(options, prefix_path):
 
         env["MXL_VCPKG_TRIPLET"] = triplet()
         env["GSETTINGS_SCHEMA_DIR"] = os.path.normpath(f"{vcpkg_install_path}/share/glib-2.0/schemas")
-        env["GST_PLUGIN_SYSTEM_PATH"] = ""
         env["GST_PLUGIN_SCANNER"] = os.path.normpath(f"{vcpkg_install_path}/tools/gstreamer/gst-plugin-scanner")
 
         for name, values in mxl_env_paths.items():
