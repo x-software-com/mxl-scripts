@@ -103,19 +103,8 @@ main() {
 		CENTOS7_LIBS="${CENTOS7_LIBS} --library /usr/local/lib64/libwayland-client.so.0"
 	fi
 
-	LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}${ADDITIONAL_LINUXDEPLOY_LD_LIBRARY_PATH:+:${ADDITIONAL_LINUXDEPLOY_LD_LIBRARY_PATH}}" \
-		NO_STRIP=1 \
-		DEPLOY_GTK_VERSION="4" \
-		GSTREAMER_INCLUDE_BAD_PLUGINS="1" \
-		GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" \
-		GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" \
-		DEBUG="1" \
-		LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" \
-		linuxdeploy \
-		--verbosity=0 \
-		--appdir ${PKG_DIR} \
-		--plugin gstreamer \
-		--plugin gtk \
+	LD_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" NO_STRIP=1 DEPLOY_GTK_VERSION="4" GSTREAMER_INCLUDE_BAD_PLUGINS="1" GSTREAMER_PLUGINS_DIR="${VCPKG_INSTALL_PLUGINS_PATH}/gstreamer" GSTREAMER_HELPERS_DIR="${VCPKG_INSTALL_PATH}/tools/gstreamer" DEBUG="1" LD_GTK_LIBRARY_PATH="${VCPKG_INSTALL_LIB_PATH}" linuxdeploy \
+		--verbosity=0 --appdir ${PKG_DIR} --plugin gstreamer --plugin gtk \
 		--library ../vcpkg_installed/${TRIPLET}/lib/libharfbuzz.so.0 \
 		--library ../vcpkg_installed/${TRIPLET}/lib/librsvg-*.so \
 		${CENTOS7_LIBS} \
