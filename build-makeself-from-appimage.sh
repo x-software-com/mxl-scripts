@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Generate a makeself self-extracting archive from an AppImage matching
 # the application name and the version.

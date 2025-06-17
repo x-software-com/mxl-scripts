@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Generate an AppImage from a linuxdeployimg
 #
