@@ -83,7 +83,7 @@ main() {
 
 	local PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch)"
 
-	cargo install --version 0.1.0 sancus
+	cargo install --version 0.1.3 sancus
 
 	local TRIPLET="$(set -e;${SCRIPT_DIR}/get-vcpkg-triplet.py)"
 
