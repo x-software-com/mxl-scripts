@@ -49,7 +49,7 @@ main() {
 
 	${SCRIPT_DIR}/check-build-env.sh
 
-	cargo install --version 0.1.0 sancus
+	cargo install --version 0.1.3 sancus
 
 	local VERSION="$(set -e;cargo version-util get-version)"
 	local TAR_PACKAGE_NAME="${PACKAGE}-${VERSION}-$(set -e;${SCRIPT_DIR}/get-vcpkg-triplet.py).tar.xz"
