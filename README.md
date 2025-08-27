@@ -26,7 +26,7 @@ Create a `.build-env` file with the following content in the root directory of y
 
 ```env
 export LICENSES_DIR="${PKG_DIR}/usr/share/licenses"
-export APP_ID_BASE="com.x-software.mxl"
+export APP_ID_BASE="com.x_software.mxl"
 export PACKAGE="mxl_product"
 export APP_NAME="MXL_Product"
 export PRODUCT_PRETTY_NAME="MXL Product"
