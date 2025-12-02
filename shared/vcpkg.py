@@ -55,3 +55,4 @@ def setup_vcpkg(package, release):
             print("Execute 'brew install nasm bison autoconf automake yasm pkg-config meson cmake' as ci-user")
         raise res.stderr
     subprocess.run([f'{SCRIPTDIR}/setup-gdkpixbuf.sh'], check = True)
+    subprocess.run([f'{SCRIPTDIR}/setup-glib-schemas.sh'], check = True)
