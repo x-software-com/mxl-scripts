@@ -310,7 +310,7 @@ main() {
 		if [[ -n ${SOURCE_HOOKS} ]]; then
 			SOURCE_HOOKS+=$'\n' # Add newline
 		fi
-		SOURCE_HOOKS+="source \"\$root_dir\"/hooks/\"${HOOK}\""
+		SOURCE_HOOKS+="source \"\$root_dir/${HOOK}\""
 	done
 
 	pushd bin
