@@ -25,12 +25,12 @@ $ git submodule add https://github.com/x-software-com/mxl-scripts.git scripts
 Create a `.build-env` file with the following content in the root directory of your repository and change the values according to your product:
 
 ```env
-export LICENSES_DIR="${PKG_DIR}/usr/share/licenses"
 export APP_ID_BASE="com.x_software.mxl"
-export PACKAGE="mxl_product"
-export APP_NAME="MXL_Product"
-export PRODUCT_PRETTY_NAME="MXL Product"
 export APP_ID="${APP_ID_BASE}.product"
+export APP_NAME="MXL_Product"
+export PACKAGE="mxl_product"
+export PRODUCT_PRETTY_NAME="MXL Product"
+export LICENSES_DIR="${PKG_DIR}/usr/share/licenses"
 export ADDITIONAL_SANCUS_ARGS="--additional-third-party-licenses ${LICENSES_DIR}/${APP_ID_BASE}.product_tool_third_party_licenses.json"
 export ADDITIONAL_LINUXDEPLOY_ARGS=""
 ```
