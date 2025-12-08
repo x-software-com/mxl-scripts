@@ -54,11 +54,9 @@ create_setup_script() {
 	local PACKAGE="$1"
 	local APP_ID="$2"
 	local PRODUCT_NAME="$3"
-	local APP_NAME="$4"
-	local DEST_DIR="$5"
-	local TOOLS_DIR="$6"
-	local REMOVE_DESKTOP_FILE_SCRIPT="$7"
-	local FILENAME="$8"
+	local DEST_DIR="$4"
+	local REMOVE_DESKTOP_FILE_SCRIPT="$5"
+	local FILENAME="$6"
 	local DESKTOP_FILE="${APP_ID}.desktop"
 
 	cat << EOFF > "${FILENAME}"
@@ -234,6 +232,7 @@ EOFF
 create_wrapper_script() {
 	local BINARY="$1"
 	local FILENAME="$2"
+	local SOURCE_HOOKS="$3"
 
 	cat << EOFF > "${FILENAME}"
 #! /usr/bin/env bash
@@ -243,8 +242,7 @@ bin_dir="\$(readlink -f "\$(dirname "\$0")")"
 root_dir="\$(dirname "\$bin_dir")"
 
 APPDIR=\$root_dir
-source "\$root_dir"/hooks/"linuxdeploy-plugin-gstreamer.sh"
-source "\$root_dir"/hooks/"linuxdeploy-plugin-gtk.sh"
+${SOURCE_HOOKS}
 
 exec "\$bin_dir/${BINARY}" "\$@"
 
@@ -292,38 +290,39 @@ main() {
 	find_and_extract_linuxdeployimg "${RESULT_DIR}" "${PACKAGE}" "${PACKAGE_VERSION}" "tmp"
 
 	rm -rf "${DEST_DIR}"
-	mv tmp/squashfs-root "${DEST_DIR}"
+	mv tmp "${DEST_DIR}"
 
 	pushd "${DEST_DIR}"
 
-	rm -f "usr/share/applications/${APP_ID}.desktop"
-	# Remove AppImage added key:
-	grep -v "X-AppImage-Version" "${APP_ID}.desktop" > "usr/share/applications/${APP_ID}.desktop"
-	rm "${APP_ID}.desktop"
-
-	rm -rf AppRun* .DirIcon *.svg
+	# Prepare directories from linuxdepoly for makeself
+	rm -rf AppRun* .DirIcon *.desktop *.svg
 	mv usr/* .
 	rmdir usr
 	mv apprun-hooks hooks
 
+	local SOURCE_HOOKS=""
 	for HOOK in $(ls hooks/*); do
 		sed -i 's#$APPDIR/usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#$APPDIR//usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#${APPDIR}/usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#pkgconfig/..##g' ${HOOK}
+
+		if [[ -n ${SOURCE_HOOKS} ]]; then
+			SOURCE_HOOKS+=$'\n' # Add newline
+		fi
+		SOURCE_HOOKS+="source \"\$root_dir\"/hooks/\"${HOOK}\""
 	done
 
 	pushd bin
 	for BINARY in $(ls); do
 		mv ${BINARY} _${BINARY}
-		create_wrapper_script "_${BINARY}" "${BINARY}"
+		create_wrapper_script "_${BINARY}" "${BINARY}" "${SOURCE_HOOKS}"
 	done
 	popd
 
 	local STARTUP_SCRIPT="bin/setup.sh"
 	local REMOVE_DESKTOP_FILE_SCRIPT="remove_desktop_file.sh"
-	local TOOLS_DIR="libexec"
-	create_setup_script "${PACKAGE}" "${APP_ID}" "${PRODUCT_PRETTY_NAME}" "${APP_NAME}" "${DEST_DIR}" "${TOOLS_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "${STARTUP_SCRIPT}"
+	create_setup_script "${PACKAGE}" "${APP_ID}" "${PRODUCT_PRETTY_NAME}" "${DEST_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "${STARTUP_SCRIPT}"
 	create_uninstall_script "${PRODUCT_PRETTY_NAME}" "${DEST_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "bin/uninstall.sh"
 	popd
 
