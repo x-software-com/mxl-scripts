@@ -6,10 +6,9 @@ set -eo pipefail
 set -x
 
 check_arguments() {
-	local APP_NAME="$1"
-	local BUILD_TYPE="$2"
-	local RESULT_DIR="$3"
-	local USAGE="Usage: $0 <app-name> <build-type> <result-directory>"
+	local BUILD_TYPE="$1"
+	local RESULT_DIR="$2"
+	local USAGE="Usage: $0 <build-type> <result-directory>"
 
 	if [ -z ${RESULT_DIR} ]; then
 		printf "\n${USAGE}\n\n"
@@ -19,19 +18,15 @@ check_arguments() {
 		printf "\n${USAGE}\n\n"
 		exit 1
 	fi
-	if [ -z ${APP_NAME} ]; then
-		printf "\n${USAGE}\n\n"
-		exit 1
-	fi
 }
 
 find_and_extract_linuxdeployimg() {
 	local RESULT_DIR="$1"
-	local APP_NAME="$2"
+	local PACKAGE="$2"
 	local VERSION="$3"
 	local EXTRACT_DIR=""
 	EXTRACT_DIR="$(set -e;pwd)/$4"
-	local LINUXDEPLOYIMG_PATTERN="${APP_NAME}-${VERSION}-$(set -e;uname)-$(set -e;arch).tar.xz"
+	local LINUXDEPLOYIMG_PATTERN="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch).tar.xz"
 
 	local TEMPFILE
 	TEMPFILE="$(set -e;mktemp)"
@@ -55,15 +50,14 @@ find_and_extract_linuxdeployimg() {
 }
 
 main() {
-	local PACKAGE="$1"
-	local BUILD_TYPE="$2"
+	local BUILD_TYPE="$1"
 	local RESULT_DIR=""
-	RESULT_DIR="$(set -e;pwd)/$3"
+	RESULT_DIR="$(set -e;pwd)/$2"
 	local SCRIPT_DIR=""
 	SCRIPT_DIR="$(set -e;dirname $0)"
 	SCRIPT_DIR="$(set -e;realpath ${SCRIPT_DIR})"
 
-	check_arguments "${PACKAGE}" "${BUILD_TYPE}" "${RESULT_DIR}"
+	check_arguments "${BUILD_TYPE}" "${RESULT_DIR}"
 
 	local BUILD_DIR="build/appimage"
 	local SRC_DIR=""
@@ -77,7 +71,6 @@ main() {
 	fi
 
 	. ${SRC_DIR}/.build-env
-
 	${SCRIPT_DIR}/check-build-env.sh
 
 	mkdir -p "${BUILD_DIR}"
@@ -91,9 +84,6 @@ main() {
 	local MAJOR_VERSION=""
 	MAJOR_VERSION="$(set -e;echo ${VERSION} | cut -d '.' -f 1)"
 	local DEST_DIR="${PACKAGE}-${MAJOR_VERSION}"
-	local STARTUP_SCRIPT="bin/setup.sh"
-	local REMOVE_DESKTOP_FILE_SCRIPT="remove_desktop_file.sh"
-	local TOOLS_DIR="libexec"
 
 	rm -rf tmp
 	find_and_extract_linuxdeployimg "${RESULT_DIR}" "${PACKAGE}" "${PACKAGE_VERSION}" "tmp"

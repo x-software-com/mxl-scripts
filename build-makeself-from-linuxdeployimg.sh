@@ -7,27 +7,27 @@ set -eo pipefail
 set -x
 
 check_arguments() {
-	local APP_NAME="$1"
+	local BUILD_TYPE="$1"
 	local RESULT_DIR="$2"
-	local USAGE="Usage: $0 <app-name> <result-directory>"
+	local USAGE="Usage: $0 <build-type> <result-directory>"
 
 	if [ -z ${RESULT_DIR} ]; then
 		printf "\n${USAGE}\n\n"
 		exit 1
 	fi
-	if [ -z ${APP_NAME} ]; then
+	if [ -z ${BUILD_TYPE} ]; then
 		printf "\n${USAGE}\n\n"
 		exit 1
 	fi
 }
 
-find_and_extract_appimage() {
+find_and_extract_linuxdeployimg() {
 	local RESULT_DIR="$1"
-	local APP_NAME="$2"
+	local PACKAGE="$2"
 	local VERSION="$3"
 	local EXTRACT_DIR=""
 	EXTRACT_DIR="$(set -e;pwd)/$4"
-	local APPIMAGE_PATTERN="${APP_NAME}-${VERSION}-x86_64.AppImage"
+	local LINUXDEPLOYIMG_PATTERN="${PACKAGE}-${VERSION}-$(set -e;uname)-$(set -e;arch).tar.xz"
 
 	local TEMPFILE
 	TEMPFILE="$(set -e;mktemp)"
@@ -36,17 +36,16 @@ find_and_extract_appimage() {
 	mkdir -p ${EXTRACT_DIR}
 	pushd ${EXTRACT_DIR}
 
-	find ${RESULT_DIR} -name "${APPIMAGE_PATTERN}" -print > "${TEMPFILE}"
+	find ${RESULT_DIR} -name "${LINUXDEPLOYIMG_PATTERN}" -print > "${TEMPFILE}"
 	local COUNT=0
 	COUNT="$(set -e; cat "${TEMPFILE}" | wc -l)"
 	if [ ${COUNT} != 1 ]; then
-		echo "None or more than one appimage '${APPIMAGE_PATTERN}' in '${RESULT_DIR}' found!"
+		echo "None or more than one linuxdeployimg '${LINUXDEPLOYIMG_PATTERN}' in '${RESULT_DIR}' found!"
 		exit 1
 	fi
 	local FILENAME
 	while read FILENAME; do
-		chmod +x ${FILENAME}
-		${FILENAME} --appimage-extract
+		tar -xvf ${FILENAME}
 	done < ${TEMPFILE}
 	popd
 }
@@ -55,11 +54,9 @@ create_setup_script() {
 	local PACKAGE="$1"
 	local APP_ID="$2"
 	local PRODUCT_NAME="$3"
-	local APP_NAME="$4"
-	local DEST_DIR="$5"
-	local TOOLS_DIR="$6"
-	local REMOVE_DESKTOP_FILE_SCRIPT="$7"
-	local FILENAME="$8"
+	local DEST_DIR="$4"
+	local REMOVE_DESKTOP_FILE_SCRIPT="$5"
+	local FILENAME="$6"
 	local DESKTOP_FILE="${APP_ID}.desktop"
 
 	cat << EOFF > "${FILENAME}"
@@ -235,6 +232,7 @@ EOFF
 create_wrapper_script() {
 	local BINARY="$1"
 	local FILENAME="$2"
+	local SOURCE_HOOKS="$3"
 
 	cat << EOFF > "${FILENAME}"
 #! /usr/bin/env bash
@@ -244,8 +242,7 @@ bin_dir="\$(readlink -f "\$(dirname "\$0")")"
 root_dir="\$(dirname "\$bin_dir")"
 
 APPDIR=\$root_dir
-source "\$root_dir"/hooks/"linuxdeploy-plugin-gstreamer.sh"
-source "\$root_dir"/hooks/"linuxdeploy-plugin-gtk.sh"
+${SOURCE_HOOKS}
 
 exec "\$bin_dir/${BINARY}" "\$@"
 
@@ -254,29 +251,28 @@ EOFF
 }
 
 main() {
-	local PACKAGE="$1"
+	local BUILD_TYPE="$1"
 	local RESULT_DIR=""
 	RESULT_DIR="$(set -e;pwd)/$2"
+	local SCRIPT_DIR=""
+	SCRIPT_DIR="$(set -e;dirname $0)"
+	SCRIPT_DIR="$(set -e;realpath ${SCRIPT_DIR})"
 
-	check_arguments "${PACKAGE}" "${RESULT_DIR}"
+	check_arguments "${BUILD_TYPE}" "${RESULT_DIR}"
 
 	local BUILD_DIR="build/makeself"
 	local SRC_DIR=""
 	SRC_DIR="$(set -e;pwd)"
-	local SCRIPT_DIR=""
-	SCRIPT_DIR="$(set -e;dirname $0)"
-	SCRIPT_DIR="$(set -e;realpath ${SCRIPT_DIR})"
-	local ARCH=""
-	ARCH="$(set -e;arch)"
-	local SYSTEM=""
-	SYSTEM="$(set -e;uname)"
-
-	. ${SRC_DIR}/.build-env
-
-	${SCRIPT_DIR}/check-build-env.sh
-
     local VERSION=""
 	VERSION="$(set -e;cargo version-util get-version)"
+
+	local PACKAGE_VERSION="${VERSION}"
+	if [ "${BUILD_TYPE}" != "release" ]; then
+		PACKAGE_VERSION="debug-${VERSION}"
+	fi
+
+	. ${SRC_DIR}/.build-env
+	${SCRIPT_DIR}/check-build-env.sh
 
 	mkdir -p "${BUILD_DIR}"
 	pushd "${BUILD_DIR}"
@@ -289,46 +285,51 @@ main() {
 	local MAJOR_VERSION=""
 	MAJOR_VERSION="$(set -e;echo ${VERSION} | cut -d '.' -f 1)"
 	local DEST_DIR="${PACKAGE}-${MAJOR_VERSION}"
-	local STARTUP_SCRIPT="bin/setup.sh"
-	local REMOVE_DESKTOP_FILE_SCRIPT="remove_desktop_file.sh"
-	local TOOLS_DIR="libexec"
 
 	rm -rf tmp
-	find_and_extract_appimage "${RESULT_DIR}" "${APP_NAME}" "${VERSION}" "tmp"
+	find_and_extract_linuxdeployimg "${RESULT_DIR}" "${PACKAGE}" "${PACKAGE_VERSION}" "tmp"
 
 	rm -rf "${DEST_DIR}"
-	mv tmp/squashfs-root "${DEST_DIR}"
+	mv tmp "${DEST_DIR}"
 
 	pushd "${DEST_DIR}"
 
-	rm -f "usr/share/applications/${APP_ID}.desktop"
-	# Remove AppImage added key:
-	grep -v "X-AppImage-Version" "${APP_ID}.desktop" > "usr/share/applications/${APP_ID}.desktop"
-	rm "${APP_ID}.desktop"
-
-	rm -rf AppRun* .DirIcon *.svg
+	# Prepare directories from linuxdepoly for makeself
+	rm -rf AppRun* .DirIcon *.desktop *.svg
 	mv usr/* .
 	rmdir usr
 	mv apprun-hooks hooks
 
+	local SOURCE_HOOKS=""
 	for HOOK in $(ls hooks/*); do
 		sed -i 's#$APPDIR/usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#$APPDIR//usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#${APPDIR}/usr#${APPDIR}#g' ${HOOK}
 		sed -i 's#pkgconfig/..##g' ${HOOK}
+
+		if [[ -n ${SOURCE_HOOKS} ]]; then
+			SOURCE_HOOKS+=$'\n' # Add newline
+		fi
+		SOURCE_HOOKS+="source \"\$root_dir/${HOOK}\""
 	done
 
 	pushd bin
 	for BINARY in $(ls); do
 		mv ${BINARY} _${BINARY}
-		create_wrapper_script "_${BINARY}" "${BINARY}"
+		create_wrapper_script "_${BINARY}" "${BINARY}" "${SOURCE_HOOKS}"
 	done
 	popd
 
-	create_setup_script "${PACKAGE}" "${APP_ID}" "${PRODUCT_PRETTY_NAME}" "${APP_NAME}" "${DEST_DIR}" "${TOOLS_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "${STARTUP_SCRIPT}"
+	local STARTUP_SCRIPT="bin/setup.sh"
+	local REMOVE_DESKTOP_FILE_SCRIPT="remove_desktop_file.sh"
+	create_setup_script "${PACKAGE}" "${APP_ID}" "${PRODUCT_PRETTY_NAME}" "${DEST_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "${STARTUP_SCRIPT}"
 	create_uninstall_script "${PRODUCT_PRETTY_NAME}" "${DEST_DIR}" "${REMOVE_DESKTOP_FILE_SCRIPT}" "bin/uninstall.sh"
 	popd
 
+	local ARCH=""
+	ARCH="$(set -e;arch)"
+	local SYSTEM=""
+	SYSTEM="$(set -e;uname)"
 	mkdir -p "${RESULT_DIR}"
 	/opt/makeself/makeself.sh --threads 0 --notemp --nooverwrite --keep-umask "${DEST_DIR}" "${RESULT_DIR}/${APP_NAME}-${VERSION}-${SYSTEM}-${ARCH}.run" "${APP_NAME}" "./${STARTUP_SCRIPT}"
 

@@ -6,18 +6,13 @@ set -eo pipefail
 set -x
 
 check_arguments() {
-	local PACKAGE="$1"
-	local BUILD_TYPE="$2"
-	local BINARY="$3"
-	local BUILD_DIR="$4"
-	local PKG_DIR="$5"
-	local RESULT_DIR="$6"
-	local USAGE="Usage: $0 <package> <build-type> <binary> <build-directory> <pkgdir> <result-directory>\n\ne.g. $0 mxl_player release|debug mxl_player builddir pkgdir result"
+	local BUILD_TYPE="$1"
+	local BINARY="$2"
+	local BUILD_DIR="$3"
+	local PKG_DIR="$4"
+	local RESULT_DIR="$5"
+	local USAGE="Usage: $0 <build-type> <binary> <build-directory> <pkgdir> <result-directory>"
 
-	if [ -z ${PACKAGE} ]; then
-		printf "\n${USAGE}\n\n"
-		exit 1
-	fi
 	if [ -z ${BUILD_TYPE} ]; then
 		printf "\n${USAGE}\n\n"
 		exit 1
@@ -52,24 +47,21 @@ extract_debug_and_strip() {
 }
 
 main() {
-	local PACKAGE="$1"
-	local BUILD_TYPE="$2"
-	local BINARY="$3"
-	local BUILD_DIR="$4"
-	local PKG_DIR="$5"
+	local BUILD_TYPE="$1"
+	local BINARY="$2"
+	local BUILD_DIR="$3"
+	local PKG_DIR="$4"
 	local RESULT_DIR=""
-	RESULT_DIR="$(set -e;pwd)/$6"
-	local LICENSES_DIR="${PKG_DIR}/usr/share/licenses"
+	RESULT_DIR="$(set -e;pwd)/$5"
 	local SRC_DIR=""
 	SRC_DIR="$(set -e;pwd)"
 	local SCRIPT_DIR=""
 	SCRIPT_DIR="$(set -e;dirname $0)"
 	SCRIPT_DIR="$(set -e;realpath ${SCRIPT_DIR})"
 
-	check_arguments "$1" "$2" "$3" "$4" "$5" "$6"
+	check_arguments "${BUILD_TYPE}" "${BINARY}" "${BUILD_DIR}" "${PKG_DIR}" "${RESULT_DIR}"
 
 	. ${SRC_DIR}/.build-env
-
 	${SCRIPT_DIR}/check-build-env.sh
 
 	local VERSION_PREFIX=""
